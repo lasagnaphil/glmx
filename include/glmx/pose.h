@@ -5,8 +5,8 @@
 #ifndef PHYSICS_BENCHMARKS_POSE_H
 #define PHYSICS_BENCHMARKS_POSE_H
 
-#include <gengine/glmx/quat.h>
-#include <gengine/glmx/transform.h>
+#include "glmx/common.h"
+#include "glmx/transform.h"
 
 #include <vector>
 #include <glm/vec3.hpp>
@@ -19,7 +19,7 @@
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/quaternion_float.hpp>
 #include <glm/ext/quaternion_trigonometric.hpp>
-#include <gengine/glmx/euler.h>
+#include "glmx/euler.h"
 
 /*
  * Represents a pose of an aritculated figure.
