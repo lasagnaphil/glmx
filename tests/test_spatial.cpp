@@ -82,3 +82,42 @@ TEST_CASE("move_frame with spatial_inertia_mat") {
     REQUIRE(G_a.c.z == doctest::Approx(c_ns.z));
     REQUIRE(G_a.m == doctest::Approx(G_a_ns.M.xx));
 }
+
+TEST_CASE("inverse with sym_mat6") {
+    sym_mat6 G(sym_mat3(1, 2, 3, 4, 5, 6), sym_mat3(7, 8, 9, 10, 11, 12), mat3(13, 14, 15, 16, 17, 18, 19, 20, 21));
+    sym_mat6 Ginv = inverse(G);
+    mat3 I3 = G.I * Ginv.I + G.C * transpose(Ginv.C);
+    mat3 C3 = mat3_cast(G.I) * Ginv.C + G.C * mat3_cast(Ginv.M);
+    mat3 M3 = transpose(G.C) * Ginv.C + G.M * Ginv.M;
+
+    REQUIRE(I3[0][0] == doctest::Approx(1.0f).epsilon(1e-4f));
+    REQUIRE(I3[0][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(I3[0][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(I3[1][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(I3[1][1] == doctest::Approx(1.0f).epsilon(1e-4f));
+    REQUIRE(I3[1][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(I3[2][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(I3[2][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(I3[2][2] == doctest::Approx(1.0f).epsilon(1e-4f));
+
+    REQUIRE(C3[0][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[0][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[0][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[1][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[1][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[1][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[2][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[2][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(C3[2][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+
+    REQUIRE(M3[0][0] == doctest::Approx(1.0f).epsilon(1e-4f));
+    REQUIRE(M3[0][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(M3[0][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(M3[1][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(M3[1][1] == doctest::Approx(1.0f).epsilon(1e-4f));
+    REQUIRE(M3[1][2] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(M3[2][0] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(M3[2][1] == doctest::Approx(0.0f).epsilon(1e-4f));
+    REQUIRE(M3[2][2] == doctest::Approx(1.0f).epsilon(1e-4f));
+}
+

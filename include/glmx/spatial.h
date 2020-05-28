@@ -176,6 +176,11 @@ namespace glmx {
         return glm::mat3(I.xx, I.xy, I.zx, I.xy, I.yy, I.yz, I.zx, I.yz, I.zz);
     }
 
+    inline glm::mat3 operator*(const sym_mat3& I1, const sym_mat3& I2) {
+        // TODO: This could be implemented more efficiently
+        return mat3_cast(I1) * mat3_cast(I2);
+    }
+
     inline sym_mat3 move_frame(sym_mat3 I_b, glm::quat q_ba) {
         // TODO: This could be implemented more efficiently
         glm::mat3 R = glm::mat3_cast(q_ba);
@@ -341,6 +346,17 @@ namespace glmx {
 
     inline float quadratic_form(const sym_mat6& G, screw V) {
         return quadratic_form(G.I, V.w) + quadratic_form(G.M, V.v) + 2*quadratic_form(G.C, V.w, V.v);
+    }
+
+    inline sym_mat6 inverse(const sym_mat6& G) {
+        glm::mat3 Iinv = mat3_cast(inverse(G.I));
+        glm::mat3 Iinv_C = Iinv * G.C;
+        glm::mat3 D = inverse(mat3_cast(G.M) - glm::transpose(G.C) * Iinv_C);
+        sym_mat6 Ginv;
+        Ginv.I = sym_mat3(Iinv + Iinv_C * D * glm::transpose(Iinv_C));
+        Ginv.C = -Iinv_C * D;
+        Ginv.M = sym_mat3(D);
+        return Ginv;
     }
 }
 
