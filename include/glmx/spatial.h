@@ -22,6 +22,10 @@ namespace glmx {
         screw(glm::vec3 w, glm::vec3 v) : w(w), v(v) {}
     };
 
+    inline screw make_screw(const float* ptr) {
+        return screw(glm::vec3(ptr[0], ptr[1], ptr[2]), glm::vec3(ptr[3], ptr[4], ptr[5]));
+    }
+
     inline screw operator+(const screw& V1, const screw& V2) {
         return {V1.w + V2.w, V1.v + V2.v};
     }
