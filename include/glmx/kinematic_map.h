@@ -157,6 +157,14 @@ namespace glmx {
         return log(euler_to_quat(angles));
     }
 
+    inline glm::mat3 euler_body_jacobian(glm::vec3 q) {
+        float s2 = glm::sin(q.y);
+        float s3 = glm::sin(q.z);
+        float c2 = glm::cos(q.y);
+        float c3 = glm::cos(q.z);
+        return glm::mat3(-s2, c2*s3, c3*c3, 0, c3, -s3, 1, 0, 0);
+    }
+
     inline std::tuple<glm::mat3, glm::mat3> euler_body_jacobian_and_deriv(glm::vec3 q, glm::vec3 qdot) {
         float s2 = glm::sin(q.y);
         float s3 = glm::sin(q.z);
