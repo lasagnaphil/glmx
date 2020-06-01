@@ -10,6 +10,15 @@
 // - "Kinematic and dynamic modeling of spherical joints using exponential coordinates"
 // - http://ethaneade.org/exp_diff.pdf
 
+#include <glmx/common.h>
+#include <glmx/spatial.h>
+
+#include <tuple>
+
+#include <glm/vec3.hpp>
+#include <glm/mat3x3.hpp>
+#include <glm/trigonometric.hpp>
+
 namespace glmx {
     inline std::tuple<float, float, float> expmap_deriv_params(float theta) {
         float alpha, beta, gamma;
@@ -53,19 +62,18 @@ namespace glmx {
     inline glm::mat3 expmap_body_jacobian(glm::vec3 w) {
         float theta = glm::length(w);
         auto [alpha, beta, gamma] = expmap_deriv_params(theta);
-        return alpha*glm::mat3(1) - beta*skew_symmetric(w) + gamma*cartesian_product(w, w);
+        return alpha*glm::mat3(1.0f) - beta*skew_symmetric(w) + gamma*cartesian_product(w, w);
     }
 
     inline std::tuple<glm::mat3, glm::mat3> expmap_body_jacobian_and_deriv(glm::vec3 w, glm::vec3 w_dot) {
         float theta = glm::length(w);
         float w_w_dot = glm::dot(w, w_dot);
         auto [alpha, beta, gamma, alpha_dot, beta_dot, gamma_dot] =
-        expmap_deriv_params2(theta, w_w_dot);
+            expmap_deriv_params2(theta, w_w_dot);
 
-        glm::mat3 J = alpha*glm::mat3(1) - beta*skew_symmetric(w) + gamma*cartesian_product(w, w);
-        glm::mat3 Jdot = -beta_dot*skew_symmetric(w) - beta*skew_symmetric(w_dot)
+        glm::mat3 J = alpha*glm::mat3(1.0f) - beta*skew_symmetric(w) + gamma*cartesian_product(w, w);
+        glm::mat3 Jdot = alpha_dot*glm::mat3(1.0f) - beta_dot*skew_symmetric(w) - beta*skew_symmetric(w_dot)
                          + gamma_dot*cartesian_product(w, w)
-                         + (gamma - beta)*w_w_dot*glm::mat3(1)
                          + gamma*(cartesian_product(w, w_dot) + cartesian_product(w_dot, w));
 
         return {J, Jdot};
@@ -127,8 +135,8 @@ namespace glmx {
     inline void reparameterize_expmap(glm::vec3& r, glm::vec3& r_dot, glm::vec3& r_2dot) {
         float theta = glm::length(r);
         const float pi = glm::pi<float>();
-        int n = -(int)glm::floor(glm::floor(theta/pi + 1) / 2);
-        float eta = (1 + 2*n*pi/theta);
+        if (theta <= pi) { return; }
+        float eta = 1 - 2*pi/theta;
         float theta_3 = theta*theta*theta;
         float theta_5 = theta_3*theta*theta;
         float r_r_dot = glm::dot(r, r_dot);
@@ -141,7 +149,6 @@ namespace glmx {
     }
 
     // Calculates derivates of the ZYX euler map.
-    // For more details, see the RBDL paper.
 
     inline glm::quat euler_to_quat(glm::vec3 q) {
         float s1 = glm::sin(0.5f*q.x);
@@ -150,7 +157,27 @@ namespace glmx {
         float c1 = glm::cos(0.5f*q.x);
         float c2 = glm::cos(0.5f*q.y);
         float c3 = glm::cos(0.5f*q.z);
-        return glm::quat(c1*c2*c3 - s1*s2*s3, c1*c2*s3+s1*s2*c3, c1*s2*c3-s1*c2*s3, c1*s2*s3+s1*c2*c3);
+        return glm::quat(c3*c2*c1 + s3*s2*s1, s3*c2*c1 - c3*s2*s1, c3*s2*c1 + s3*c2*s1, c3*c2*s1 - s3*s2*c1);
+    }
+
+    inline glm::vec3 quat_to_euler(glm::quat q) {
+        glm::vec3 e;
+        float sinr_cosp = 2*(q.w*q.x + q.y*q.z);
+        float cosr_cosp = 1 - 2*(q.x*q.x+q.y*q.y);
+        e.z = glm::atan(sinr_cosp, cosr_cosp);
+
+        float sinp = 2*(q.w*q.y - q.z*q.x);
+        if (glm::abs(sinp) >= 1) {
+            e.y = M_PI/2 * glm::sign(sinp);
+        }
+        else {
+            e.y = glm::asin(sinp);
+        }
+
+        float siny_cosp = 2*(q.w*q.z + q.x*q.y);
+        float cosy_cosp = 1 - 2*(q.y*q.y + q.z*q.z);
+        e.x = glm::atan(siny_cosp, cosy_cosp);
+        return e;
     }
 
     inline glm::vec3 euler_to_expmap(glm::vec3 angles) {
@@ -162,7 +189,7 @@ namespace glmx {
         float s3 = glm::sin(q.z);
         float c2 = glm::cos(q.y);
         float c3 = glm::cos(q.z);
-        return glm::mat3(-s2, c2*s3, c3*c3, 0, c3, -s3, 1, 0, 0);
+        return glm::mat3(-s2, c2*s3, c2*c3, 0, c3, -s3, 1, 0, 0);
     }
 
     inline std::tuple<glm::mat3, glm::mat3> euler_body_jacobian_and_deriv(glm::vec3 q, glm::vec3 qdot) {
@@ -170,7 +197,7 @@ namespace glmx {
         float s3 = glm::sin(q.z);
         float c2 = glm::cos(q.y);
         float c3 = glm::cos(q.z);
-        glm::mat3 J = glm::mat3(-s2, c2*s3, c3*c3, 0, c3, -s3, 1, 0, 0);
+        glm::mat3 J = glm::mat3(-s2, c2*s3, c2*c3, 0, c3, -s3, 1, 0, 0);
         glm::mat3 Jdot = glm::mat3(-c2*qdot.y, -s2*s3*qdot.y + c2*c3*qdot.z, -s2*c3*qdot.y - c2*s3*qdot.z,
                                    0, -s3*qdot.z, -c3*qdot.z,
                                    0, 0, 0);
