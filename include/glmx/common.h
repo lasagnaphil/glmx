@@ -11,12 +11,21 @@
 
 namespace glmx {
     inline glm::vec3 log(glm::quat q) {
+        constexpr float pi = glm::pi<float>();
         q = glm::normalize(q);
-        float a = sqrtf(1 - q.w*q.w);
+        float a = glm::sqrt(1 - q.w*q.w);
         if (a <= glm::epsilon<float>()) {
             return glm::vec3 {};
         }
-        return 2.0f * atan2f(a, q.w) / a * glm::vec3(q.x, q.y, q.z);
+        float theta = 2.0f * glm::atan(a, q.w);
+        if (theta > pi) {
+            theta -= 2*pi;
+        }
+        else if (theta < -pi) {
+            theta += 2*pi;
+        }
+        glm::vec3 v = theta / a * glm::vec3(q.x, q.y, q.z);
+        return v;
     }
 
     inline glm::vec3 logdiff(glm::quat q1, glm::quat q2) {
