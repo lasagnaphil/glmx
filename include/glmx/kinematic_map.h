@@ -219,6 +219,32 @@ namespace glmx {
             r.z -= 2*n*pi;
         }
     }
+
+    inline glm::vec3 rot_tracking_error(glm::vec3 r, glm::vec3 r_d) {
+        float theta = length(r);
+        float theta_d = length(r_d);
+        float r_r_d = glm::dot(r, r_d);
+        float alpha, beta, alpha_dot, beta_dot, alpha_d, beta_d;
+        if (theta < 1e-4f) {
+            alpha = 1 - theta*theta/6;
+            beta = 0.5f - theta*theta/24;
+            alpha_dot = -1.f/3.f + 1.f/30.f * theta*theta;
+            beta_dot = -1.f/12.f + 1.f/180.f * theta*theta;
+            alpha_d = 1 - theta_d*theta_d/6;
+            beta_d = 0.5f - theta_d*theta_d/24;
+        }
+        else {
+            alpha = glm::sin(theta) / theta;
+            beta = (1.0f - glm::cos(theta)) / (theta*theta);
+            float gamma = (1.0f - alpha) / (theta*theta);
+            alpha_dot = gamma - beta;
+            beta_dot = (alpha - 2*beta) / (theta*theta);
+            alpha_d = glm::sin(theta_d) / theta_d;
+            beta_d = (1.0f - glm::cos(theta_d)) / (theta_d*theta_d);
+        }
+        return (0.5f*(1.0f+glm::cos(theta_d))*alpha - alpha_dot*alpha_d*r_r_d - 0.5f*beta_d*beta_dot*r_r_d*r_r_d)*r
+               - (alpha_d*alpha + beta_d*beta*r_r_d)*r_d;
+    }
 }
 
 #endif //GLMX_KINEMATIC_MAP_H

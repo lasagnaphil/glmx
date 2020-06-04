@@ -15,7 +15,7 @@ namespace glmx {
         q = glm::normalize(q);
         float a = glm::sqrt(1 - q.w*q.w);
         if (a <= glm::epsilon<float>()) {
-            return glm::vec3 {};
+            return glm::vec3(0);
         }
         float theta = 2.0f * glm::atan(a, q.w);
         if (theta > pi) {

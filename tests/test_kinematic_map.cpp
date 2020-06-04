@@ -65,3 +65,20 @@ TEST_CASE("euler jacobian") {
     }
 }
 
+TEST_CASE("expmap rotational tracking error") {
+    vec3 r = vec3(0.5, 1, 1.5);
+    vec3 r_d = vec3(1.3, 0.2, 0.7);
+
+    vec3 e_r = rot_tracking_error(r, r_d);
+
+    float eps = 1e-4f;
+    float Phi = 1 - cos(length(log(exp(-r_d) * exp(r))));
+    float Phi_x = 1 - cos(length(log(exp(-r_d) * exp(r + vec3(eps, 0, 0)))));
+    float Phi_y = 1 - cos(length(log(exp(-r_d) * exp(r + vec3(0, eps, 0)))));
+    float Phi_z = 1 - cos(length(log(exp(-r_d) * exp(r + vec3(0, 0, eps)))));
+    vec3 dPhi = vec3(Phi_x - Phi, Phi_y - Phi, Phi_z - Phi);
+    REQUIRE(e_r.x*eps - dPhi.x == doctest::Approx(0.0f));
+    REQUIRE(e_r.y*eps - dPhi.y == doctest::Approx(0.0f));
+    REQUIRE(e_r.z*eps - dPhi.z == doctest::Approx(0.0f));
+}
+
