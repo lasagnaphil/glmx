@@ -121,3 +121,19 @@ TEST_CASE("inverse with sym_mat6") {
     REQUIRE(M3[2][2] == doctest::Approx(1.0f).epsilon(1e-4f));
 }
 
+TEST_CASE("move_frame with sym_mat6") {
+    sym_mat6 G = sym_mat6(sym_mat3(1, 2, 3, 4, 5, 6), sym_mat3(7, 8, 9, 10, 11, 12), mat3(13, 14, 15, 16, 17, 18, 19, 20, 21));
+    transform T = transform(vec3(1, 2, 3), Rx(0.5)*Ry(1.0)*Rz(1.5));
+    sym_mat6 Gp1 = move_frame(G, T);
+    sym_mat6 Gp2 = move_frame(Gp1, inverse(T));
+    REQUIRE(G.C[0][0] - Gp2.C[0][0] == doctest::Approx(0.0f));
+    REQUIRE(G.C[0][1] - Gp2.C[0][1] == doctest::Approx(0.0f));
+    REQUIRE(G.C[0][2] - Gp2.C[0][2] == doctest::Approx(0.0f));
+    REQUIRE(G.C[1][0] - Gp2.C[1][0] == doctest::Approx(0.0f));
+    REQUIRE(G.C[1][1] - Gp2.C[1][1] == doctest::Approx(0.0f));
+    REQUIRE(G.C[1][2] - Gp2.C[1][2] == doctest::Approx(0.0f));
+    REQUIRE(G.C[2][0] - Gp2.C[2][0] == doctest::Approx(0.0f));
+    REQUIRE(G.C[2][1] - Gp2.C[2][1] == doctest::Approx(0.0f));
+    REQUIRE(G.C[2][2] - Gp2.C[2][2] == doctest::Approx(0.0f));
+}
+
