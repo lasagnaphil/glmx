@@ -106,6 +106,30 @@ namespace glmx {
         return screw_move(V_hat, V_len);
     }
 
+    inline screw log(const transform& T) {
+        screw V;
+        V.w = log(T.q);
+        float theta = glm::length(V.w);
+        if (theta <= glm::epsilon<float>()) {
+            V.w = glm::vec3(0);
+            V.v = T.v;
+        }
+        else {
+            float delta;
+            if (theta < 1e-4f) {
+                delta = 12.0f;
+            }
+            else {
+                float alpha = sin(theta) / theta;
+                float beta = (1 - cos(theta)) / (theta*theta);
+                delta = (1 - alpha/(2.0f*beta)) / (theta*theta);
+            }
+            glm::vec3 w_cross_v = glm::cross(V.w, T.v);
+            V.v = T.v - 0.5f * w_cross_v + delta*glm::cross(V.w, w_cross_v);
+        }
+        return V;
+    }
+
     /*
     inline transform adjoint_to_trans(transform T, screw V) {
         glm::vec3 w = T.q * V.w;

@@ -198,6 +198,22 @@ namespace glmx {
             p3._q[i] = glm::normalize(glm::lerp(p1._q[i], p2._q[i], alpha));
         }
     }
+
+    inline std::vector<glm::vec3> pose_differentiate(const_pose_view p1, const_pose_view p2, float dt) {
+        std::vector<glm::vec3> diff(p1.size() + 1);
+        diff[0] = p2.v() - p1.v();
+        for (int i = 0; i < p1.size(); i++) {
+            diff[i+1] = glmx::log(glm::inverse(p1.q(i)) * p2.q(i)) / dt;
+        }
+        return diff;
+    }
+
+    inline void pose_differentiate(const_pose_view p1, const_pose_view p2, float dt, glm::vec3* diff) {
+        diff[0] = p2.v() - p1.v();
+        for (int i = 0; i < p1.size(); i++) {
+            diff[i+1] = glmx::log(glm::inverse(p1.q(i)) * p2.q(i)) / dt;
+        }
+    }
 }
 
 #endif //PHYSICS_BENCHMARKS_POSE_H
