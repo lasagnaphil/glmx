@@ -126,16 +126,10 @@ namespace glmx {
                + (gamma_dot*w_w_dot + gamma*(glm::length2(w_dot) + glm::dot(w, w_2dot)))*w;
     }
 
-    inline screw expmap_second_body_deriv(screw V, screw V_dot, screw V_2dot) {
-        fprintf(stderr, "Unimplemented!\n");
-        exit(EXIT_FAILURE);
-        return screw();
-    }
-
     inline void reparameterize_expmap(glm::vec3& r, glm::vec3& r_dot, glm::vec3& r_2dot) {
         float theta = glm::length(r);
         const float pi = glm::pi<float>();
-        if (theta <= pi) { return; }
+        if (theta < pi) { return; }
         float eta = 1 - 2*pi/theta;
         float theta_3 = theta*theta*theta;
         float theta_5 = theta_3*theta*theta;
