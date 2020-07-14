@@ -29,7 +29,8 @@ namespace glmx {
     }
 
     inline glm::vec3 logdiff(glm::quat q1, glm::quat q2) {
-        return glmx::log(q2 * glm::conjugate(q1));
+        // return glmx::log(q2 * glm::conjugate(q1));
+        return glmx::log(glm::conjugate(q1) * q2);
     }
 
     inline glm::quat exp(glm::vec3 v) {
