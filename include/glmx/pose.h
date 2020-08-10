@@ -72,7 +72,7 @@ namespace glmx {
         const float* q_ptr = nullptr;
         size_t _size = 0;
 
-        const_pose_view(float* v_ptr, float* q_ptr, size_t size) :
+        const_pose_view(const float* v_ptr, const float* q_ptr, size_t size) :
                 v_ptr(v_ptr), q_ptr(q_ptr), _size(size) {}
         const_pose_view(const glm::vec3* v_ptr, const glm::quat* q_ptr, size_t size) :
                 v_ptr((float*)v_ptr), q_ptr((float*)q_ptr), _size(size) {}
